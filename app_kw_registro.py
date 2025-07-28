@@ -12,7 +12,7 @@ st.title("⚡ Captura de kW Diario")
 # Selector de capturista
 capturista = st.selectbox("👤 ¿Quién está capturando?", [
     "Hector Bustamante", "Jose Ochoa", "Marto Acevedo",
-    "Orlando Ramirez", "Guillermo Mendoza", "Nahum Zavala"
+    "Orlando Ramirez", "Guillermo Mendoza", "Nahum Zavala", "Jose Angel Carmona"
 ])
 
 # Fecha de captura
