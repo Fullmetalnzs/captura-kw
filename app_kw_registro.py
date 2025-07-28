@@ -2,30 +2,28 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 import os
+import base64
 from datetime import datetime
 
 # Configurar interfaz
 st.set_page_config(page_title="Captura de Consumo Eléctrico", layout="wide")
 st.title("⚡ Captura de kW Diario")
 
-# Fecha y usuario
-from datetime import datetime
-
-# 👤 Selector de capturista — esto debe ir antes
+# Selector de capturista
 capturista = st.selectbox("👤 ¿Quién está capturando?", [
     "Hector Bustamante", "Jose Ochoa", "Marto Acevedo",
     "Orlando Ramirez", "Guillermo Mendoza", "Nahum Zavala"
 ])
 
-if capturista == "Jose Ochoa" or "Nahum Zavala":
+# Captura de fecha
+if capturista == "Jose Ochoa" or capturista == "Nahum Zavala":
     fecha_seleccionada = st.date_input("📅 Fecha de captura", value=datetime.today())
     fecha = fecha_seleccionada.strftime('%Y-%m-%d')
 else:
     fecha = datetime.today().strftime('%Y-%m-%d')
     st.text_input("📅 Fecha de captura (bloqueada)", value=fecha, disabled=True)
 
-# ✅ Aquí defines mes_actual
-mes_actual = fecha[:7].replace("-", "_")    
+mes_actual = fecha[:7].replace("-", "_")  # ejemplo: "2025_07"
 
 # Datos por área
 areas = {
@@ -56,7 +54,7 @@ for i, area in enumerate(areas):
         with cols[i]:
             datos[area] = st.number_input(area, min_value=0.0, format="%.2f")
 
-# Conexión a base SQLite
+# Conexión SQLite
 conn = sqlite3.connect("base_kw.db")
 cursor = conn.cursor()
 cursor.execute('''
@@ -80,7 +78,7 @@ cursor.execute('''
 ''')
 conn.commit()
 
-# Guardar en base de datos
+# Guardar registro
 if st.button("💾 Guardar registro"):
     cursor.execute('''
         INSERT INTO registros (
@@ -99,36 +97,36 @@ if st.button("💾 Guardar registro"):
     conn.commit()
     st.success("✅ Registro guardado correctamente.")
 
-# Exportar historial por mes
-import base64
+# Mostrar registros (debug opcional)
+if st.checkbox("🔍 Ver registros guardados"):
+    df_debug = pd.read_sql("SELECT * FROM registros", conn)
+    st.write(df_debug)
 
+# Función para generar enlace de descarga
 def obtener_descarga_excel(ruta_archivo):
     with open(ruta_archivo, "rb") as f:
         contenido = f.read()
         b64 = base64.b64encode(contenido).decode()
-        enlace_descarga = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{os.path.basename(ruta_archivo)}">📥 Haz clic aquí para descargar el archivo</a>'
-        return enlace_descarga
+        enlace = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{os.path.basename(ruta_archivo)}">📥 Descargar historial mensual</a>'
+        return enlace
 
-
-
+# Botón para exportar Excel
 if st.button("📤 Exportar historial mensual"):
     carpeta_local = r"C:\Users\fullm\OneDrive\Escritorio\Registros_KW"
     os.makedirs(carpeta_local, exist_ok=True)
-
-        # Crea nombre del archivo según mes actual
+    
     nombre_archivo = f"historial_{mes_actual}.xlsx"
     ruta_archivo = os.path.join(carpeta_local, nombre_archivo)
 
-    # Obtener registros del mes desde SQLite
-    cursor.execute("SELECT * FROM registros WHERE strftime('%Y-%m', fecha) = ?", [fecha[:7]])
+    cursor.execute("SELECT * FROM registros WHERE strftime('%Y_%m', fecha) = ?", [mes_actual])
     filas = cursor.fetchall()
 
-    # Crear DataFrame con encabezados
-    columnas = [desc[0] for desc in cursor.description]
-    df = pd.DataFrame(filas, columns=columnas)
+    if filas:
+        columnas = [desc[0] for desc in cursor.description]
+        df = pd.DataFrame(filas, columns=columnas)
+        df.to_excel(ruta_archivo, index=False)
+        st.markdown(obtener_descarga_excel(ruta_archivo), unsafe_allow_html=True)
+    else:
+        st.warning("⚠️ No hay registros para ese mes.")
 
-    # Exportar a Excel
-    df.to_excel(ruta_archivo, index=False)
-
-    # Mostrar enlace de descarga
-    st.markdown(obtener_descarga_excel(ruta_archivo), unsafe_allow_html=True)
+conn.close()
