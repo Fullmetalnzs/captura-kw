@@ -52,7 +52,8 @@ for i, area in enumerate(areas):
             datos[area] = ""
     else:
         with cols[i]:
-            datos[area] = st.number_input(area, min_value=0.0, format="%.2f")
+            valor = st.number_input(area, min_value=0.0, format="%.2f")
+            datos[area] = "" if valor == 0.0 else valor
 
 # Conexión SQLite
 conn = sqlite3.connect("base_kw.db")
@@ -61,44 +62,54 @@ cursor.execute('''
     CREATE TABLE IF NOT EXISTS registros (
         fecha TEXT,
         capturista TEXT,
-        alimentador1 REAL,
-        alimentador2 REAL,
-        alimentador3 REAL,
-        primario_c1 REAL,
-        secundario_c1 REAL,
-        prim_sec_c2 REAL,
-        merril REAL,
-        barren REAL,
-        pozo_7a_7b REAL,
+        alimentador1 TEXT,
+        alimentador2 TEXT,
+        alimentador3 TEXT,
+        primario_c1 TEXT,
+        secundario_c1 TEXT,
+        prim_sec_c2 TEXT,
+        merril TEXT,
+        barren TEXT,
+        pozo_7a_7b TEXT,
         pozo_7c TEXT,
         pozo_7d TEXT,
-        oficinas REAL,
-        taller REAL
+        oficinas TEXT,
+        taller TEXT
     )
 ''')
 conn.commit()
 
-# Guardar registro con prefijos ajustados
+# Guardar registro con ajustes
 if st.button("💾 Guardar registro"):
-    primario_c1_modificado = float(f"10{datos['Primario C1']}")
-    prim_sec_c2_modificado = float(f"1{datos['Primario y Secundario C2']}")
+    primario_c1_modificado = (
+        "" if datos["Primario C1"] == "" else str(f"10{datos['Primario C1']}")
+    )
+    prim_sec_c2_modificado = (
+        "" if datos["Primario y Secundario C2"] == "" else str(f"1{datos['Primario y Secundario C2']}")
+    )
+
+    valores = [
+        fecha, capturista,
+        str(datos["Alimentador 1"]) if datos["Alimentador 1"] != "" else "",
+        str(datos["Alimentador 2"]) if datos["Alimentador 2"] != "" else "",
+        str(datos["Alimentador 3"]) if datos["Alimentador 3"] != "" else "",
+        primario_c1_modificado,
+        str(datos["Secundario C1"]) if datos["Secundario C1"] != "" else "",
+        prim_sec_c2_modificado,
+        str(datos["Merril"]) if datos["Merril"] != "" else "",
+        str(datos["Barren"]) if datos["Barren"] != "" else "",
+        str(datos["Pozo 7A y 7B"]) if datos["Pozo 7A y 7B"] != "" else "",
+        datos["Pozo 7C"],
+        datos["Pozo 7D"],
+        str(datos["Oficinas"]) if datos["Oficinas"] != "" else "",
+        str(datos["Taller de Mantenimiento"]) if datos["Taller de Mantenimiento"] != "" else ""
+    ]
 
     cursor.execute('''
-        INSERT INTO registros (
-            fecha, capturista, alimentador1, alimentador2, alimentador3,
-            primario_c1, secundario_c1, prim_sec_c2, merril, barren,
-            pozo_7a_7b, pozo_7c, pozo_7d, oficinas, taller
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (
-        fecha, capturista,
-        datos["Alimentador 1"], datos["Alimentador 2"], datos["Alimentador 3"],
-        primario_c1_modificado, datos["Secundario C1"], prim_sec_c2_modificado,
-        datos["Merril"], datos["Barren"], datos["Pozo 7A y 7B"],
-        datos["Pozo 7C"], datos["Pozo 7D"],
-        datos["Oficinas"], datos["Taller de Mantenimiento"]
-    ))
+        INSERT INTO registros VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', valores)
     conn.commit()
-    st.success("✅ Registro guardado con valores modificados.")
+    st.success("✅ Registro guardado correctamente sin ceros visibles.")
 
 # Mostrar registros (debug opcional)
 if st.checkbox("🔍 Ver registros guardados"):
@@ -133,4 +144,5 @@ if st.button("📤 Exportar historial mensual"):
         st.warning("⚠️ No hay registros para ese mes.")
 
 conn.close()
+
 
