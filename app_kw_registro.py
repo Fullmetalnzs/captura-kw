@@ -101,7 +101,7 @@ if st.button("💾 Guardar registro"):
 
 # Exportar historial por mes
 if st.button("📤 Exportar historial mensual"):
-    carpeta_local = os.path.join(os.getcwd(), "Registros_KW")
+    carpeta_local = os.path.expanduser("~/OneDrive/Escritorio/Registros_KW")
     os.makedirs(carpeta_local, exist_ok=True)
     nombre_archivo = os.path.join(carpeta_local, f"kw_historial_{mes_actual}.xlsx")
 
