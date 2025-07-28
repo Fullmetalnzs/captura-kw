@@ -113,10 +113,22 @@ def obtener_descarga_excel(ruta_archivo):
 
 if st.button("📤 Exportar historial mensual"):
     carpeta_local = r"C:\Users\fullm\OneDrive\Escritorio\Registros_KW"
-    os.makedirs(carpeta_local, exist_ok=True)    
+    os.makedirs(carpeta_local, exist_ok=True)
 
-df = pd.read_sql("SELECT * FROM registros WHERE strftime('%Y_%m', fecha) = ?", conn, params=(mes_actual,))
-df.to_excel(nombre_archivo, index=False)
+        # Crea nombre del archivo según mes actual
+    nombre_archivo = f"historial_{mes_actual}.xlsx"
+    ruta_archivo = os.path.join(carpeta_local, nombre_archivo)
 
-st.success(f"📁 Historial mensual exportado a:\n{nombre_archivo}")
-st.info(f"📂 Archivo guardado en: `{nombre_archivo}`")
+    # Obtener registros del mes desde SQLite
+    cursor.execute("SELECT * FROM registros WHERE strftime('%Y-%m', fecha) = ?", [fecha[:7]])
+    filas = cursor.fetchall()
+
+    # Crear DataFrame con encabezados
+    columnas = [desc[0] for desc in cursor.description]
+    df = pd.DataFrame(filas, columns=columnas)
+
+    # Exportar a Excel
+    df.to_excel(ruta_archivo, index=False)
+
+    # Mostrar enlace de descarga
+    st.markdown(obtener_descarga_excel(ruta_archivo), unsafe_allow_html=True)
