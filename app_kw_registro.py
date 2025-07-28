@@ -9,14 +9,21 @@ st.set_page_config(page_title="Captura de Consumo Eléctrico", layout="wide")
 st.title("⚡ Captura de kW Diario")
 
 # Fecha y usuario
-fecha = datetime.today().strftime('%Y-%m-%d')
-mes_actual = datetime.today().strftime('%Y_%m')
-st.text_input("📅 Fecha de captura", value=fecha, disabled=True)
+from datetime import datetime
+
+if capturista == "Jose Ochoa", "Nahum Zavala":
+    fecha_seleccionada = st.date_input("📅 Fecha de captura", value=datetime.today())
+    fecha = fecha_seleccionada.strftime('%Y-%m-%d')
+else:
+    fecha = datetime.today().strftime('%Y-%m-%d')
+    st.text_input("📅 Fecha de captura (bloqueada)", value=fecha, disabled=True)
+
 
 capturista = st.selectbox("👤 ¿Quién está capturando?", [
     "Hector Bustamante", "Jose Ochoa", "Marto Acevedo",
-    "Orlando Ramirez", "Guillermo Mendoza"
+    "Orlando Ramirez", "Guillermo Mendoza", "Nahum Zavala"
 ])
+
 
 # Datos por área
 areas = {
