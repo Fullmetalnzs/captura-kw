@@ -78,8 +78,11 @@ cursor.execute('''
 ''')
 conn.commit()
 
-# Guardar registro
+# Guardar registro con prefijos ajustados
 if st.button("💾 Guardar registro"):
+    primario_c1_modificado = float(f"10{datos['Primario C1']}")
+    prim_sec_c2_modificado = float(f"1{datos['Primario y Secundario C2']}")
+
     cursor.execute('''
         INSERT INTO registros (
             fecha, capturista, alimentador1, alimentador2, alimentador3,
@@ -89,13 +92,13 @@ if st.button("💾 Guardar registro"):
     ''', (
         fecha, capturista,
         datos["Alimentador 1"], datos["Alimentador 2"], datos["Alimentador 3"],
-        datos["Primario C1"], datos["Secundario C1"], datos["Primario y Secundario C2"],
+        primario_c1_modificado, datos["Secundario C1"], prim_sec_c2_modificado,
         datos["Merril"], datos["Barren"], datos["Pozo 7A y 7B"],
         datos["Pozo 7C"], datos["Pozo 7D"],
         datos["Oficinas"], datos["Taller de Mantenimiento"]
     ))
     conn.commit()
-    st.success("✅ Registro guardado correctamente.")
+    st.success("✅ Registro guardado con valores modificados.")
 
 # Mostrar registros (debug opcional)
 if st.checkbox("🔍 Ver registros guardados"):
@@ -114,7 +117,7 @@ def obtener_descarga_excel(ruta_archivo):
 if st.button("📤 Exportar historial mensual"):
     carpeta_local = r"C:\Users\fullm\OneDrive\Escritorio\Registros_KW"
     os.makedirs(carpeta_local, exist_ok=True)
-    
+
     nombre_archivo = f"historial_{mes_actual}.xlsx"
     ruta_archivo = os.path.join(carpeta_local, nombre_archivo)
 
@@ -130,3 +133,4 @@ if st.button("📤 Exportar historial mensual"):
         st.warning("⚠️ No hay registros para ese mes.")
 
 conn.close()
+
