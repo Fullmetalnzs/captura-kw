@@ -11,7 +11,7 @@ st.title("⚡ Captura de kW Diario")
 # Fecha y usuario
 from datetime import datetime
 
-if capturista == "Nahum Zavala":
+if capturista == "Jose Ochoa":
     fecha_seleccionada = st.date_input("📅 Fecha de captura", value=datetime.today())
     fecha = fecha_seleccionada.strftime('%Y-%m-%d')
 else:
