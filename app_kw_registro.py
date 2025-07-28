@@ -11,19 +11,18 @@ st.title("⚡ Captura de kW Diario")
 # Fecha y usuario
 from datetime import datetime
 
-if capturista == "Jose Ochoa":
-    fecha_seleccionada = st.date_input("📅 Fecha de captura", value=datetime.today())
-    fecha = fecha_seleccionada.strftime('%Y-%m-%d')
-else:
-    fecha = datetime.today().strftime('%Y-%m-%d')
-    st.text_input("📅 Fecha de captura (bloqueada)", value=fecha, disabled=True)
-
-
+# 👤 Selector de capturista — esto debe ir antes
 capturista = st.selectbox("👤 ¿Quién está capturando?", [
     "Hector Bustamante", "Jose Ochoa", "Marto Acevedo",
     "Orlando Ramirez", "Guillermo Mendoza", "Nahum Zavala"
 ])
 
+if capturista == "Jose Ochoa" or "Nahum Zavala":
+    fecha_seleccionada = st.date_input("📅 Fecha de captura", value=datetime.today())
+    fecha = fecha_seleccionada.strftime('%Y-%m-%d')
+else:
+    fecha = datetime.today().strftime('%Y-%m-%d')
+    st.text_input("📅 Fecha de captura (bloqueada)", value=fecha, disabled=True)
 
 # Datos por área
 areas = {
