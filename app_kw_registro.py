@@ -24,6 +24,9 @@ else:
     fecha = datetime.today().strftime('%Y-%m-%d')
     st.text_input("📅 Fecha de captura (bloqueada)", value=fecha, disabled=True)
 
+# ✅ Aquí defines mes_actual
+mes_actual = fecha[:7].replace("-", "_")    
+
 # Datos por área
 areas = {
     "Alimentador 1": 0.0,
