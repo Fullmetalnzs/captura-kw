@@ -12,7 +12,7 @@ st.title("⚡ Captura de kW Diario")
 # Selector de capturista
 capturista = st.selectbox("👤 ¿Quién está capturando?", [
     "Hector Bustamante", "Jose Ochoa", "Marto Acevedo",
-    "Orlando Ramirez", "Guillermo Mendoza", "Nahum Zavala", "Jose Angel Carmona"
+    "Orlando Ramirez", "Guillermo Mendoza", "Nahum Zavala", "Jose Angel"
 ])
 
 # Fecha de captura
@@ -137,6 +137,33 @@ if capturista in ["Nahum Zavala", "Jose Ochoa"]:
             st.success("✅ Registro actualizado correctamente.")
     else:
         st.info("ℹ️ No hay registros para esa fecha.")
+
+# 📤 Exportar historial mensual
+def obtener_descarga_excel(ruta_archivo):
+    with open(ruta_archivo, "rb") as f:
+        contenido = f.read()
+        b64 = base64.b64encode(contenido).decode()
+        enlace = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{os.path.basename(ruta_archivo)}">📥 Descargar historial mensual</a>'
+        return enlace
+
+if st.button("📤 Exportar historial mensual"):
+    carpeta_local = r"C:\Users\fullm\OneDrive\Escritorio\Registros_KW"
+    os.makedirs(carpeta_local, exist_ok=True)
+
+    nombre_archivo = f"historial_{mes_actual}.xlsx"
+    ruta_archivo = os.path.join(carpeta_local, nombre_archivo)
+
+    cursor.execute("SELECT * FROM registros WHERE strftime('%Y_%m', fecha) = ?", [mes_actual])
+    filas = cursor.fetchall()
+
+    if filas:
+        columnas = [desc[0] for desc in cursor.description]
+        df = pd.DataFrame(filas, columns=columnas)
+        df.to_excel(ruta_archivo, index=False)
+        st.markdown(obtener_descarga_excel(ruta_archivo), unsafe_allow_html=True)
+    else:
+        st.warning("⚠️ No hay registros para ese mes.")
+
 conn.close()
 
 
