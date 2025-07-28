@@ -5,7 +5,7 @@ import os
 import base64
 from datetime import datetime
 
-# Configurar interfaz
+# Configurar la interfaz
 st.set_page_config(page_title="Captura de Consumo Eléctrico", layout="wide")
 st.title("⚡ Captura de kW Diario")
 
@@ -15,31 +15,23 @@ capturista = st.selectbox("👤 ¿Quién está capturando?", [
     "Orlando Ramirez", "Guillermo Mendoza", "Nahum Zavala"
 ])
 
-# Captura de fecha
-if capturista == "Jose Ochoa" or capturista == "Nahum Zavala":
+# Fecha de captura
+if capturista in ["Jose Ochoa", "Nahum Zavala"]:
     fecha_seleccionada = st.date_input("📅 Fecha de captura", value=datetime.today())
     fecha = fecha_seleccionada.strftime('%Y-%m-%d')
 else:
     fecha = datetime.today().strftime('%Y-%m-%d')
     st.text_input("📅 Fecha de captura (bloqueada)", value=fecha, disabled=True)
 
-mes_actual = fecha[:7].replace("-", "_")  # ejemplo: "2025_07"
+mes_actual = fecha[:7].replace("-", "_")  # ej: "2025_07"
 
-# Datos por área
+# Áreas
 areas = {
-    "Alimentador 1": 0.0,
-    "Alimentador 2": 0.0,
-    "Alimentador 3": 0.0,
-    "Primario C1": 0.0,
-    "Secundario C1": 0.0,
-    "Primario y Secundario C2": 0.0,
-    "Merril": 0.0,
-    "Barren": 0.0,
-    "Pozo 7A y 7B": 0.0,
-    "Pozo 7C": None,
-    "Pozo 7D": None,
-    "Oficinas": 0.0,
-    "Taller de Mantenimiento": 0.0
+    "Alimentador 1": 0.0, "Alimentador 2": 0.0, "Alimentador 3": 0.0,
+    "Primario C1": 0.0, "Secundario C1": 0.0, "Primario y Secundario C2": 0.0,
+    "Merril": 0.0, "Barren": 0.0, "Pozo 7A y 7B": 0.0,
+    "Pozo 7C": None, "Pozo 7D": None,
+    "Oficinas": 0.0, "Taller de Mantenimiento": 0.0
 }
 
 datos = {}
@@ -52,7 +44,7 @@ for i, area in enumerate(areas):
             datos[area] = ""
     else:
         with cols[i]:
-            valor = st.number_input(area, min_value=0.0, format="%.2f")
+            valor = st.number_input(area, min_value=0.0, format="%.2f", key=f"input_{area}")
             datos[area] = "" if valor == 0.0 else valor
 
 # Conexión SQLite
@@ -62,61 +54,91 @@ cursor.execute('''
     CREATE TABLE IF NOT EXISTS registros (
         fecha TEXT,
         capturista TEXT,
-        alimentador1 TEXT,
-        alimentador2 TEXT,
-        alimentador3 TEXT,
-        primario_c1 TEXT,
-        secundario_c1 TEXT,
-        prim_sec_c2 TEXT,
-        merril TEXT,
-        barren TEXT,
-        pozo_7a_7b TEXT,
-        pozo_7c TEXT,
-        pozo_7d TEXT,
-        oficinas TEXT,
-        taller TEXT
+        alimentador1 TEXT, alimentador2 TEXT, alimentador3 TEXT,
+        primario_c1 TEXT, secundario_c1 TEXT, prim_sec_c2 TEXT,
+        merril TEXT, barren TEXT, pozo_7a_7b TEXT,
+        pozo_7c TEXT, pozo_7d TEXT,
+        oficinas TEXT, taller TEXT
     )
 ''')
 conn.commit()
 
-# Guardar registro con ajustes
+# Guardar registro
 if st.button("💾 Guardar registro"):
-    primario_c1_modificado = (
-        "" if datos["Primario C1"] == "" else str(f"10{datos['Primario C1']}")
-    )
-    prim_sec_c2_modificado = (
-        "" if datos["Primario y Secundario C2"] == "" else str(f"1{datos['Primario y Secundario C2']}")
-    )
+    primario_c1_mod = "" if datos["Primario C1"] == "" else f"10{datos['Primario C1']}"
+    prim_sec_c2_mod = "" if datos["Primario y Secundario C2"] == "" else f"1{datos['Primario y Secundario C2']}"
 
     valores = [
         fecha, capturista,
-        str(datos["Alimentador 1"]) if datos["Alimentador 1"] != "" else "",
-        str(datos["Alimentador 2"]) if datos["Alimentador 2"] != "" else "",
-        str(datos["Alimentador 3"]) if datos["Alimentador 3"] != "" else "",
-        primario_c1_modificado,
-        str(datos["Secundario C1"]) if datos["Secundario C1"] != "" else "",
-        prim_sec_c2_modificado,
-        str(datos["Merril"]) if datos["Merril"] != "" else "",
-        str(datos["Barren"]) if datos["Barren"] != "" else "",
-        str(datos["Pozo 7A y 7B"]) if datos["Pozo 7A y 7B"] != "" else "",
-        datos["Pozo 7C"],
-        datos["Pozo 7D"],
-        str(datos["Oficinas"]) if datos["Oficinas"] != "" else "",
-        str(datos["Taller de Mantenimiento"]) if datos["Taller de Mantenimiento"] != "" else ""
+        str(datos["Alimentador 1"]), str(datos["Alimentador 2"]), str(datos["Alimentador 3"]),
+        primario_c1_mod, str(datos["Secundario C1"]), prim_sec_c2_mod,
+        str(datos["Merril"]), str(datos["Barren"]), str(datos["Pozo 7A y 7B"]),
+        datos["Pozo 7C"], datos["Pozo 7D"],
+        str(datos["Oficinas"]), str(datos["Taller de Mantenimiento"])
     ]
 
-    cursor.execute('''
-        INSERT INTO registros VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', valores)
+    cursor.execute("INSERT INTO registros VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", valores)
     conn.commit()
-    st.success("✅ Registro guardado correctamente sin ceros visibles.")
+    st.success("✅ Registro guardado correctamente.")
 
-# Mostrar registros (debug opcional)
-if st.checkbox("🔍 Ver registros guardados"):
-    df_debug = pd.read_sql("SELECT * FROM registros", conn)
-    st.write(df_debug)
+# 🛠️ Editar registros anteriores
+if capturista in ["Nahum Zavala", "Jose Ochoa"]:
+    st.markdown("---")
+    st.subheader("✏️ Editar un registro existente")
+    fecha_editar = st.date_input("Selecciona la fecha a editar", key="fecha_editar")
+    fecha_str = fecha_editar.strftime('%Y-%m-%d')
 
-# Función para generar enlace de descarga
+    cursor.execute("SELECT * FROM registros WHERE fecha = ?", (fecha_str,))
+    registro = cursor.fetchone()
+
+    if registro:
+        st.write("Registro original:", registro)
+        editar_cols = st.columns(len(areas))
+        datos_edit = {}
+
+        for i, area in enumerate(areas):
+            if area in ["Pozo 7C", "Pozo 7D"]:
+                with editar_cols[i]:
+                    st.text_input(f"{area} (Inactivo)", value="(Inactivo)", disabled=True, key=f"edit_{area}")
+                    datos_edit[area] = ""
+            else:
+                val_actual = registro[i+2]  # saltar fecha y capturista
+                with editar_cols[i]:
+                    nuevo_val = st.number_input(
+                        f"{area} (Editar)", min_value=0.0, format="%.2f",
+                        value=float(val_actual) if val_actual not in ["", None] else 0.0,
+                        key=f"edit_{area}"
+                    )
+                    datos_edit[area] = "" if nuevo_val == 0.0 else nuevo_val
+
+        if st.button("🔄 Actualizar registro"):
+            prim_c1_edit = "" if datos_edit["Primario C1"] == "" else f"10{datos_edit['Primario C1']}"
+            prim_sec_c2_edit = "" if datos_edit["Primario y Secundario C2"] == "" else f"1{datos_edit["Primario y Secundario C2"]}"
+
+            nuevos_valores = [
+                capturista,
+                str(datos_edit["Alimentador 1"]), str(datos_edit["Alimentador 2"]), str(datos_edit["Alimentador 3"]),
+                prim_c1_edit, str(datos_edit["Secundario C1"]), prim_sec_c2_edit,
+                str(datos_edit["Merril"]), str(datos_edit["Barren"]), str(datos_edit["Pozo 7A y 7B"]),
+                datos_edit["Pozo 7C"], datos_edit["Pozo 7D"],
+                str(datos_edit["Oficinas"]), str(datos_edit["Taller de Mantenimiento"]),
+                fecha_str
+            ]
+
+            cursor.execute('''
+                UPDATE registros SET
+                    capturista=?, alimentador1=?, alimentador2=?, alimentador3=?,
+                    primario_c1=?, secundario_c1=?, prim_sec_c2=?,
+                    merril=?, barren=?, pozo_7a_7b=?,
+                    pozo_7c=?, pozo_7d=?, oficinas=?, taller=?
+                WHERE fecha=?
+            ''', nuevos_valores)
+            conn.commit()
+            st.success("✅ Registro actualizado correctamente.")
+    else:
+        st.info("ℹ️ No hay registros para esa fecha.")
+
+# 📤 Exportar historial mensual
 def obtener_descarga_excel(ruta_archivo):
     with open(ruta_archivo, "rb") as f:
         contenido = f.read()
@@ -124,7 +146,6 @@ def obtener_descarga_excel(ruta_archivo):
         enlace = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{os.path.basename(ruta_archivo)}">📥 Descargar historial mensual</a>'
         return enlace
 
-# Botón para exportar Excel
 if st.button("📤 Exportar historial mensual"):
     carpeta_local = r"C:\Users\fullm\OneDrive\Escritorio\Registros_KW"
     os.makedirs(carpeta_local, exist_ok=True)
