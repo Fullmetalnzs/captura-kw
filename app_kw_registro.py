@@ -112,9 +112,8 @@ def obtener_descarga_excel(ruta_archivo):
 
 
 if st.button("📤 Exportar historial mensual"):
-    carpeta_local = os.path.expanduser("~\Users\fullm\OneDrive\Escritorio\Registros_KW"")
-    os.makedirs(carpeta_local, exist_ok=True)
-    nombre_archivo = os.path.join(carpeta_local, f"kw_historial_{mes_actual}.xlsx")
+    carpeta_local = r"C:\Users\fullm\OneDrive\Escritorio\Registros_KW"
+    os.makedirs(carpeta_local, exist_ok=True)    
 
 df = pd.read_sql("SELECT * FROM registros WHERE strftime('%Y_%m', fecha) = ?", conn, params=(mes_actual,))
 df.to_excel(nombre_archivo, index=False)
