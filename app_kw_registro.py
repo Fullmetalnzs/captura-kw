@@ -108,5 +108,5 @@ nombre_archivo = os.path.join(carpeta_local, f"kw_historial_{mes_actual}.xlsx")
     df = pd.read_sql("SELECT * FROM registros WHERE strftime('%Y_%m', fecha) = ?", conn, params=(mes_actual,))
     df.to_excel(nombre_archivo, index=False)
 
-    st.success(f"📁 Historial mensual exportado a:\n{nombre_archivo}")
+st.success(f"📁 Historial mensual exportado a:\n{nombre_archivo}")
 st.info(f"📂 Archivo guardado en: `{nombre_archivo}`")
