@@ -100,6 +100,17 @@ if st.button("💾 Guardar registro"):
     st.success("✅ Registro guardado correctamente.")
 
 # Exportar historial por mes
+import base64
+
+def obtener_descarga_excel(ruta_archivo):
+    with open(ruta_archivo, "rb") as f:
+        contenido = f.read()
+        b64 = base64.b64encode(contenido).decode()
+        enlace_descarga = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{os.path.basename(ruta_archivo)}">📥 Haz clic aquí para descargar el archivo</a>'
+        return enlace_descarga
+
+
+
 if st.button("📤 Exportar historial mensual"):
     carpeta_local = os.path.expanduser("~/OneDrive/Escritorio/Registros_KW")
     os.makedirs(carpeta_local, exist_ok=True)
