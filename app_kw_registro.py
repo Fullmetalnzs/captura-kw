@@ -138,7 +138,7 @@ if capturista in ["Nahum Zavala", "Jose Ochoa"]:
     else:
         st.info("ℹ️ No hay registros para esa fecha.")
 
-# 📤 Exportar historial mensual
+# 📤 Exportar historial mensual actual
 def obtener_descarga_excel(ruta_archivo):
     with open(ruta_archivo, "rb") as f:
         contenido = f.read()
@@ -164,52 +164,12 @@ if st.button("📤 Exportar historial mensual"):
     else:
         st.warning("⚠️ No hay registros para ese mes.")
 
-conn.close()
-# 📅 Exportar mes personalizado con diseño ejecutivo
+# 📊 Exportar mes personalizado con estilo ejecutivo
 st.markdown("---")
 st.markdown("## 📊 Historial por mes seleccionado")
 st.markdown("Exporta registros anteriores con solo elegir el mes. El archivo se descarga en Excel con nombre ejecutivo y estructura profesional.")
 
-# Estilo de tarjeta elegante
 st.markdown("""
 <div style="background-color:#f3f6fa; padding:20px; border-radius:10px; border:1px solid #d0d7de">
     <h4 style="color:#2b2b2b;">📅 Elegir mes para exportar</h4>
-</div>
-""", unsafe_allow_html=True)
-
-mes_exportar = st.date_input("🗓️ Selecciona un mes", value=datetime.today(), format="YYYY-MM")
-mes_exportar_str = mes_exportar.strftime('%Y_%m')
-
-if st.button("📁 Exportar registros ejecutivos"):
-    carpeta_local = r"C:\Users\fullm\OneDrive\Escritorio\Registros_KW"
-    os.makedirs(carpeta_local, exist_ok=True)
-
-    nombre_archivo = f"historial_{mes_exportar_str}.xlsx"
-    ruta_archivo = os.path.join(carpeta_local, nombre_archivo)
-
-    conn = sqlite3.connect("base_kw.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM registros WHERE strftime('%Y_%m', fecha) = ?", [mes_exportar_str])
-    filas = cursor.fetchall()
-
-    if filas:
-        columnas = [desc[0] for desc in cursor.description]
-        df = pd.DataFrame(filas, columns=columnas)
-        df.to_excel(ruta_archivo, index=False)
-
-        with open(ruta_archivo, "rb") as f:
-            contenido = f.read()
-            b64 = base64.b64encode(contenido).decode()
-            enlace = f'''
-            <div style="padding:10px; background-color:#d0e6ff; border-radius:8px; margin-top:15px;">
-                <a style="font-weight:bold; color:#004085;" href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" 
-                download="{os.path.basename(ruta_archivo)}">⬇️ Descargar historial {mes_exportar_str}</a>
-            </div>
-            '''
-            st.markdown(enlace, unsafe_allow_html=True)
-    else:
-        st.warning("🚫 No se encontraron registros para ese mes.")
-
-    conn.close()
-
-
+</div
